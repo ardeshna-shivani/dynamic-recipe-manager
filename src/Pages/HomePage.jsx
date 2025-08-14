@@ -27,6 +27,10 @@ const HomePage = (props) => {
     return JSON.parse(localStorage.getItem('recipes')) || [];
   };
 
+  const handleRatingUpdate = () => {
+    refreshRecipes();
+  };
+
   // Handle filtering and sorting directly in the render cycle
   const handleFilterAndSort = () => {
     let visibleRecipes = getRecipesFromStorage(); // Make a shallow copy of the recipes
@@ -124,6 +128,7 @@ const HomePage = (props) => {
         <RecipeDetailsModal
           recipe={selectedRecipe} 
            onClose={() => setSelectedRecipe(null)}
+           onRatingUpdate={handleRatingUpdate}
         />
       )}
     </div>

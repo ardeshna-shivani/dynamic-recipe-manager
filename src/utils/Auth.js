@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     users.push(newUser);//userlist array [{}]
     // console.log("Updated users array:", users);
     localStorage.setItem("users", JSON.stringify(users));//whole user array to convert string and store localstorage "users"
-    // console.log("Stored updated users in localStorage");
+    // console.log("Stored updated users in localStorage");{}
     setUser(newUser);//new user login user set {}
     // console.log("Set current user state:", newUser);
     localStorage.setItem("user", JSON.stringify(newUser));//new user "user" key sathe store {}

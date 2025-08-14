@@ -1,28 +1,48 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../utils/Auth';
 
 const RecipeCard = (props) => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const [rating, setRating] = useState('');
+  const [avgRating, setAvgRating] = useState(0);
 
-  //login user show edit and delete btn
-//   console.log("recipe",props?.recipe); recipe obj
-  const isUserOwner = user && user.email === props?.recipe.userEmail; 
-//   console.log("userEmail: ",user.email);
-//   console.log("recipe email: ",props?.recipe.userEmail);
-//   console.log("isUserOwner",user.email === props?.recipe.userEmail);
+  useEffect(() => {
+    const storedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];//[{}]
+    const currentRecipeName = props.recipe.name.trim().toLowerCase();//recipe name
+    // console.log("currentRecipeName",currentRecipeName);
+    const allRatings = storedRecipes
+      .filter(r => r.name.trim().toLowerCase() === currentRecipeName && Array.isArray(r.ratings))
+      .flatMap(r => r.ratings);
+    // console.log("allRatings",allRatings);//[ {userEmail, rating}, {userEmail, rating}, ... ]
+    //all stored recipe mathi only choose recipe k jenu name currentRecipeName sathe exact match kare and rating
+    //cha aa pn array hovi joy .flatmap() recipe ander all rating ak motu array banave da.
+
+    const validRatings = allRatings
+      .map(r => r.rating)
+      .filter(r => typeof r === 'number' && r > 0);
+    // console.log("validRatings",validRatings);//[rating number array] -> [4,4,4]
+    
+    if (validRatings.length > 0) {
+      const sum = validRatings.reduce((acc, val) => acc + val, 0);
+      const avg = sum / validRatings.length;
+      setAvgRating(avg);
+      // console.log("avg",avg);//number
+      
+    } else {
+      setAvgRating(0);
+    }
+  }, [props.recipe]);
+
+  const isUserOwner = user && user.email === props.recipe.userEmail;
 
   const onEdit = () => {
     // Navigate to the addRecipe page with the current recipe data
     navigate(`/editRecipe/${props.recipe.id}`);
-    // console.log("recipe id: ",props.recipe.id);
-    
   };
 
   const onDelete = () => {
-    // Remove the recipe from localStorage
+     // Remove the recipe from localStorage
     const storedRecipes = JSON.parse(localStorage.getItem('recipes')) || [];//store recipe//[{}]
     const updatedRecipes = storedRecipes.filter(recipe => recipe.id !== props.recipe.id);//{}
     //stored recipe ma id cha aa props.recipe.id jevi na hoi to reva devane 
@@ -36,11 +56,11 @@ const RecipeCard = (props) => {
 
   return (
     <div
-      onClick={props?.onClick}
+      onClick={props.onClick}
       style={{
         border: '1px solid #ddd',
-        padding: '16px',
-        borderRadius: '8px',
+        padding: 16,
+        borderRadius: 8,
         backgroundColor: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -50,21 +70,16 @@ const RecipeCard = (props) => {
       }}
     >
       <div>
-        <h3>{props?.recipe.name}</h3>
-        <p><b>Cuisine:</b> {props?.recipe.cuisine}</p>
-        <p><b>Cooking Time:</b> {props?.recipe.time}</p>
-        <p><b>Rating: </b></p>
+        <h3>{props.recipe.name}</h3>
+        <p><b>Cuisine:</b> {props.recipe.cuisine}</p>
+        <p><b>Cooking Time:</b> {props.recipe.time}</p>
+        <p><b>Rating:</b> {avgRating.toFixed(1)} / 5</p>
       </div>
 
-      {/* Show buttons if the user owns the recipe */}
       {isUserOwner && (
         <div
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            marginTop: '10px',
-            display: 'flex',
-            justifyContent: 'space-between'
-          }}
+          onClick={e => e.stopPropagation()}
+          style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between' }}
         >
           <button onClick={onEdit} style={{ backgroundColor: '#f0ad4e' }}>Edit</button>
           <button onClick={onDelete} style={{ backgroundColor: '#d9534f' }}>Delete</button>
@@ -75,3 +90,4 @@ const RecipeCard = (props) => {
 };
 
 export default RecipeCard;
+
